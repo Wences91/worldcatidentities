@@ -13,4 +13,4 @@ before_install: pip install --upgrade pip setuptools
 install: pip install -r requirements.txt
 
 script:
-  - scripts/test_author.py
+  - "python scripts/test_author.py"
