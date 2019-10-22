@@ -1,4 +1,1 @@
 requests
-ElementTree
-urllib.parse
-unicodedata
