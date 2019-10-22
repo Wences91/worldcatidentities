@@ -44,14 +44,13 @@ class Authority:
                 self.finded = True
                 self.established_form = xml_tree.findall('.//match[nameType="personal"]/establishedForm')[0].text
                 self.uri = xml_tree.findall('.//match[nameType="personal"]/uri')[0].text
-                print(self.name + ' - ' + 'Finded')
                 
                 return [self.established_form, self.uri]
             else:
-                print(self.name + ' - ' + 'No personal identifiers')
+                self.finded = False
                 return None
         else:
-            print(self.name + ' - ' + 'No results')
+            self.finded = False
             return None
         
         
@@ -59,16 +58,32 @@ class AuthorityData(Authority):
     OAUTH_HOST = 'worldcat.org'
     def __init__(self, name):
         super().__init__(name)
-        self.languages = None
+        self.tree = None
+        self.languages_total = None
         self.total_holdings = None
         self.work_count = None
         self.record_count = None
+        self.languages = None
+        self.works = {'0' : ['title', 'language', 'holdings', 'editions', 'type']}
     
     def data(self):
-        response = requests.get('https://' + self.OAUTH_HOST + self.uri + '/identity.xml')
-        xml_tree = ElementTree.fromstring(response.content)
+        if(self.finded == None):
+            self.search()
         
-        self.languages = xml_tree.find('nameInfo/languages').attrib['count']
-        self.total_holdings = xml_tree.find('nameInfo/totalHoldings').text
-        self.work_count = xml_tree.find('nameInfo/workCount').text
-        self.record_count = xml_tree.find('nameInfo/recordCount').text
+        if(self.finded == True):
+            response = requests.get('https://' + self.OAUTH_HOST + self.uri + '/identity.xml')
+            self.tree = ElementTree.fromstring(response.content)
+            # general
+            self.languages_total = self.tree.find('nameInfo/languages').attrib['count']
+            self.total_holdings = self.tree.find('nameInfo/totalHoldings').text
+            self.work_count = self.tree.find('nameInfo/workCount').text
+            self.record_count = self.tree.find('nameInfo/recordCount').text
+            # specific
+            self.languages = [[self.tree.findall('nameInfo/languages/lang')[i].attrib['code'],self.tree.findall('nameInfo/languages/lang')[i].attrib['count']] for i in range(len(self.tree.findall('nameInfo/languages/lang')))]
+            # works
+            for i in range(len(self.tree.findall('by/citation'))):
+                self.works[str(i + 1)] = [self.tree.findall('by/citation')[i].find('title').text,
+                           self.tree.findall('by/citation')[i].find('languages').attrib['count'],
+                           self.tree.findall('by/citation')[i].find('holdings').text,
+                           self.tree.findall('by/citation')[i].find('numEditions').text,
+                           self.tree.findall('by/citation')[i].find('recordType').text]
