@@ -13,9 +13,6 @@ setup(
   keywords = ['API', 'WorldCat Identities'],
   install_requires=[
           'requests',
-          'ElementTree',
-          'urllib.parse',
-          'unicodedata',
       ],
   classifiers=[
     'Development Status :: 3 - Alpha',
