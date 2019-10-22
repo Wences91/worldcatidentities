@@ -1,4 +1,4 @@
-from worldcatidentities.Authority import  Authority, AuthorityData
+from worldcatidentities import  Authority, AuthorityData
 
 author = AuthorityData('Federico Gracía Lorca')
 author.search()
