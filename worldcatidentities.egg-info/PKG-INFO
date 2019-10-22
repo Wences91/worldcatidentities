@@ -1,0 +1,21 @@
+Metadata-Version: 1.1
+Name: worldcatidentities
+Version: 0.2
+Summary: Package that recovers authorities data from OCLCs WorldCat Identities API
+Home-page: https://github.com/Wences91/worldcatidentities
+Author: Wenceslao Arroyo-Machado
+Author-email: wences@ugr.es
+License: GPL-3
+Download-URL: https://github.com/Wences91/worldcatidentities
+Description: UNKNOWN
+Keywords: API,WorldCat Identities
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
