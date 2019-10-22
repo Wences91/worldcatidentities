@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
   name = 'worldcatidentities',
   packages = find_packages(exclude=["tests"]),
-  version = '0.2',
+  version = '0.3',
   license='GPL-3',
   description = 'Package that recovers authorities data from OCLCs WorldCat Identities API',
   author = 'Wenceslao Arroyo-Machado',
