@@ -1,1 +1,1 @@
-from worldcatidentities.Authority import  Authority, AuthorityData
+from worldcatidentities.authority import  Authority, AuthorityData
