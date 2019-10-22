@@ -6,11 +6,6 @@ python:
 - '3.7'
 - '3.8'
 
-cache: pip
+install: pip install .
 
-before_install: pip install --upgrade pip setuptools
-
-install: pip install -r requirements.txt
-
-script:
-  - "python scripts/test_author.py"
+script: python scripts/test_author.py
