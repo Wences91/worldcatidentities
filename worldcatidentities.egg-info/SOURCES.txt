@@ -1,0 +1,10 @@
+README.md
+setup.cfg
+setup.py
+worldcatidentities/__init__.py
+worldcatidentities/authority.py
+worldcatidentities.egg-info/PKG-INFO
+worldcatidentities.egg-info/SOURCES.txt
+worldcatidentities.egg-info/dependency_links.txt
+worldcatidentities.egg-info/requires.txt
+worldcatidentities.egg-info/top_level.txt
