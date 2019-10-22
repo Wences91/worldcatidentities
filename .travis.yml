@@ -7,4 +7,4 @@ python:
 - '3.8'
 
 script:
-  - python setup.py test
+  - tests/test_author.py
