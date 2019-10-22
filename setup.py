@@ -12,7 +12,10 @@ setup(
   download_url = 'https://github.com/Wences91/worldcatidentities',
   keywords = ['API', 'WorldCat Identities'],
   install_requires=[
-          'validators'
+          'requests',
+          'ElementTree',
+          'urllib.parse',
+          'unicodedata',
       ],
   classifiers=[
     'Development Status :: 3 - Alpha',
