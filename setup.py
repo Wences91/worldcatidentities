@@ -1,9 +1,9 @@
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(
   name = 'worldcatidentities',
-  packages = ['worldcatidentities'],
-  version = '0.1',
+  packages = find_packages(exclude=["tests"]),
+  version = '0.2',
   license='GPL-3',
   description = 'Package that recovers authorities data from OCLCs WorldCat Identities API',
   author = 'Wenceslao Arroyo-Machado',
