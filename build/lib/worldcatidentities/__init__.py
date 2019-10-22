@@ -1,1 +1,0 @@
-from worldcatidentities.authority import  Authority, AuthorityData
