@@ -1,9 +1,21 @@
-from setuptools import setup, find_packages
+import os
+from setuptools import setup, find_packages, Command
+
+class CleanCommand(Command):
+  user_options = []
+  def initialize_options(self):
+    self.cwd = None
+  def finalize_options(self):
+    self.cwd = os.getcwd()
+  def run(self):
+    assert os.getcwd() == self.cwd, 'Must be in package root: %s' % self.cwd
+    #os.system ('rm -rf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
+    os.system ('rm -rf ./*.egg-info')
 
 setup(
   name = 'worldcatidentities',
   packages = find_packages(exclude=["tests"]),
-  version = '0.3',
+  version = '0.3.1',
   license='GPL-3',
   description = 'Package that recovers authorities data from OCLCs WorldCat Identities API',
   author = 'Wenceslao Arroyo-Machado',
@@ -11,9 +23,12 @@ setup(
   url = 'https://github.com/Wences91/worldcatidentities',
   download_url = 'https://github.com/Wences91/worldcatidentities',
   keywords = ['API', 'WorldCat Identities'],
-  install_requires=[
-          'requests',
-      ],
+  install_requires = [
+    'requests',
+  ],
+  cmdclass={
+    'clean': CleanCommand,
+  },
   classifiers=[
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Developers',
