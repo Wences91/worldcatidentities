@@ -8,3 +8,8 @@ author = AuthorityData('Federico Gracía Lorca')
 author.data()
 author.works
 author.name
+
+for i in ['Federico Gracía Lorca', 'Virginia Woolf']:
+    authority = AuthorityData(i).data()
+    print(authority.name)
+    print(authority.works)
