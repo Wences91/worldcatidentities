@@ -25,6 +25,7 @@ setup(
   keywords = ['API', 'WorldCat Identities'],
   install_requires = [
     'requests',
+    'lxml',
   ],
   cmdclass={
     'clean': CleanCommand,
