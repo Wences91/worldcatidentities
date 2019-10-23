@@ -29,6 +29,7 @@ class Authority:
             pass
         
         self.fixed_name = unicodedata.normalize('NFD', self.name).encode('ascii', 'ignore').decode('utf-8')
+        return self
     
     def search(self):
         self.__strip_accents__()
@@ -44,14 +45,11 @@ class Authority:
                 self.finded = True
                 self.established_form = xml_tree.findall('.//match[nameType="personal"]/establishedForm')[0].text
                 self.uri = xml_tree.findall('.//match[nameType="personal"]/uri')[0].text
-                
-                return [self.established_form, self.uri]
             else:
-                self.finded = False
-                return None
+                self.finded = False              
         else:
             self.finded = False
-            return None
+        return [self.established_form, self.uri]   
         
         
 class AuthorityData(Authority):
@@ -87,3 +85,4 @@ class AuthorityData(Authority):
                            self.tree.findall('by/citation')[i].find('holdings').text,
                            self.tree.findall('by/citation')[i].find('numEditions').text,
                            self.tree.findall('by/citation')[i].find('recordType').text]
+        return self
