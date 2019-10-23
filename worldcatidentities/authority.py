@@ -1,5 +1,6 @@
 import requests
-from xml.etree import ElementTree
+from lxml import etree
+#from lxml.html import soupparser #html
 import urllib.parse
 import unicodedata
 
@@ -8,13 +9,13 @@ class Authority:
     OAUTH_HOST = 'worldcat.org'
     OAUTH_ROOT = '/identities/'
     
-    def __init__(self, author):
+    def __init__(self, name):
         """
         Authority search
         
         :param author: not normalized author name
         """
-        self.name = author
+        self.name = name
         self.fixed_name = None
         self.quote_name = None
         self.finded = None
@@ -34,23 +35,29 @@ class Authority:
     def search(self):
         self.__strip_accents__()
         self.quote_name = urllib.parse.quote(self.fixed_name)
-        find_response = requests.get('https://' + self.OAUTH_HOST + self.OAUTH_ROOT + 'find?fullName=' + self.quote_name + '&maxList=100')
-        xml_tree = ElementTree.fromstring(find_response.content)
-        
-        # is there any result?
-        if(int(xml_tree.attrib['hitCount']) > 0):
-            # is there any personal identifier?
-            if(any(xml_tree.findall('.//match[nameType="personal"]'))):
-                # get name and uri from first correct result
-                self.finded = True
-                self.established_form = xml_tree.findall('.//match[nameType="personal"]/establishedForm')[0].text
-                self.uri = xml_tree.findall('.//match[nameType="personal"]/uri')[0].text
+        find_response = requests.get('https://' + self.OAUTH_HOST + self.OAUTH_ROOT + 'find?fullName=' + self.quote_name + '&maxList=25')
+        if find_response.status_code == 200:
+            try:
+                xml_tree = etree.fromstring(find_response.content)
+            except:
+                # in case of unescaped characters
+                xml_tree = etree.fromstring(find_response.content, parser = etree.XMLParser(recover = True))
+            # is there any result?
+            if int(xml_tree.attrib['hitCount']) > 0:
+                # is there any personal identifier?
+                #if any(xml_tree.findall('.//match[nameType="personal"]')):
+                if len([i for i in xml_tree.findall('.//match[nameType="personal"]')]) > 0: # to avoid lxml warning
+                    # get name and uri from first correct result
+                    self.finded = True
+                    self.established_form = xml_tree.findall('.//match[nameType="personal"]/establishedForm')[0].text
+                    self.uri = xml_tree.findall('.//match[nameType="personal"]/uri')[0].text
+                else:
+                    self.finded = False              
             else:
-                self.finded = False              
+                self.finded = False
         else:
-            self.finded = False
-        return [self.established_form, self.uri]   
-        
+            None
+        return self  
         
 class AuthorityData(Authority):
     OAUTH_HOST = 'worldcat.org'
@@ -65,12 +72,15 @@ class AuthorityData(Authority):
         self.works = {'0' : ['title', 'language', 'holdings', 'editions', 'type']}
     
     def data(self):
-        if(self.finded == None):
+        if self.finded == None:
             self.search()
         
-        if(self.finded == True):
+        if self.finded == True:
             response = requests.get('https://' + self.OAUTH_HOST + self.uri + '/identity.xml')
-            self.tree = ElementTree.fromstring(response.content)
+            try:
+                self.tree = etree.fromstring(response.content)
+            except:
+                self.tree = etree.fromstring(response.content, parser = etree.XMLParser(recover = True))
             # general
             self.languages_total = self.tree.find('nameInfo/languages').attrib['count']
             self.total_holdings = self.tree.find('nameInfo/totalHoldings').text
@@ -79,10 +89,12 @@ class AuthorityData(Authority):
             # specific
             self.languages = [[self.tree.findall('nameInfo/languages/lang')[i].attrib['code'],self.tree.findall('nameInfo/languages/lang')[i].attrib['count']] for i in range(len(self.tree.findall('nameInfo/languages/lang')))]
             # works
-            for i in range(len(self.tree.findall('by/citation'))):
+            #for i in range(len(self.tree.findall('by/citation'))):
+            for i in range(len([i for i in self.tree.findall('by/citation')])): # to avoid lxml warning
                 self.works[str(i + 1)] = [self.tree.findall('by/citation')[i].find('title').text,
                            self.tree.findall('by/citation')[i].find('languages').attrib['count'],
                            self.tree.findall('by/citation')[i].find('holdings').text,
                            self.tree.findall('by/citation')[i].find('numEditions').text,
                            self.tree.findall('by/citation')[i].find('recordType').text]
         return self
+    
