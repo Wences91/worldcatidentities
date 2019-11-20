@@ -13,7 +13,7 @@ class Authority:
         """
         Authority search
         
-        :param author: not normalized author name
+        :param name: not normalized author name
         """
         self.name = name
         self.fixed_name = None
@@ -61,8 +61,9 @@ class Authority:
         
 class AuthorityData(Authority):
     OAUTH_HOST = 'worldcat.org'
-    def __init__(self, name):
+    def __init__(self, name = None, uri = None):
         super().__init__(name)
+        self.uri = '/identities/' + uri if uri is not None else None
         self.tree = None
         self.languages_total = None
         self.total_holdings = None
@@ -72,15 +73,18 @@ class AuthorityData(Authority):
         self.works = {'0' : ['title', 'language', 'holdings', 'editions', 'type']}
     
     def data(self):
-        if self.finded == None:
+        if self.finded == None and self.uri == None:
             self.search()
         
-        if self.finded == True:
+        if self.finded == True or self.uri is not None:
             response = requests.get('https://' + self.OAUTH_HOST + self.uri + '/identity.xml')
             try:
                 self.tree = etree.fromstring(response.content)
             except:
                 self.tree = etree.fromstring(response.content, parser = etree.XMLParser(recover = True))
+            # only by uri
+            if self.established_form == None:
+                self.established_form = ' '.join([subname.text for subname in self.tree.find('nameInfo/rawName').getchildren()])
             # general
             self.languages_total = self.tree.find('nameInfo/languages').attrib['count']
             self.total_holdings = self.tree.find('nameInfo/totalHoldings').text
@@ -97,4 +101,4 @@ class AuthorityData(Authority):
                            self.tree.findall('by/citation')[i].find('numEditions').text,
                            self.tree.findall('by/citation')[i].find('recordType').text]
         return self
-    
+
