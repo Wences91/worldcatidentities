@@ -15,7 +15,7 @@ class CleanCommand(Command):
 setup(
   name = 'worldcatidentities',
   packages = find_packages(exclude=["tests"]),
-  version = '0.5',
+  version = '0.5.8',
   license='GPL-3',
   description = 'Package that recovers authorities data from OCLCs WorldCat Identities API',
   author = 'Wenceslao Arroyo-Machado',
