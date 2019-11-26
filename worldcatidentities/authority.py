@@ -3,6 +3,7 @@ from lxml import etree
 #from lxml.html import soupparser #html
 import urllib.parse
 import unicodedata
+import warnings
 
 
 class Authority:
@@ -52,9 +53,11 @@ class Authority:
                     self.established_form = xml_tree.findall('.//match[nameType="personal"]/establishedForm')[0].text
                     self.uri = xml_tree.findall('.//match[nameType="personal"]/uri')[0].text
                 else:
-                    self.finded = False              
+                    self.finded = False
+                    warnings.warn(self.fixed_name + ' has not been found', stacklevel=2)
             else:
                 self.finded = False
+                warnings.warn(self.fixed_name + ' has not been found', stacklevel=2)
         else:
             None
         return self  
@@ -64,6 +67,7 @@ class AuthorityData(Authority):
     def __init__(self, name = None, uri = None):
         super().__init__(name)
         self.uri = '/identities/' + uri if uri is not None else None
+        self.finded = True if uri is not None else None
         self.tree = None
         self.languages_total = None
         self.total_holdings = None
@@ -76,29 +80,35 @@ class AuthorityData(Authority):
         if self.finded == None and self.uri == None:
             self.search()
         
-        if self.finded == True or self.uri is not None:
+        if self.finded == True:
             response = requests.get('https://' + self.OAUTH_HOST + self.uri + '/identity.xml')
-            try:
-                self.tree = etree.fromstring(response.content)
-            except:
-                self.tree = etree.fromstring(response.content, parser = etree.XMLParser(recover = True))
-            # only by uri
-            if self.established_form == None:
-                self.established_form = ' '.join([subname.text for subname in self.tree.find('nameInfo/rawName').getchildren()])
-            # general
-            self.languages_total = self.tree.find('nameInfo/languages').attrib['count']
-            self.total_holdings = self.tree.find('nameInfo/totalHoldings').text
-            self.work_count = self.tree.find('nameInfo/workCount').text
-            self.record_count = self.tree.find('nameInfo/recordCount').text
-            # specific
-            self.languages = [[self.tree.findall('nameInfo/languages/lang')[i].attrib['code'],self.tree.findall('nameInfo/languages/lang')[i].attrib['count']] for i in range(len(self.tree.findall('nameInfo/languages/lang')))]
-            # works
-            #for i in range(len(self.tree.findall('by/citation'))):
-            for i in range(len([i for i in self.tree.findall('by/citation')])): # to avoid lxml warning
-                self.works[str(i + 1)] = [self.tree.findall('by/citation')[i].find('title').text,
-                           self.tree.findall('by/citation')[i].find('languages').attrib['count'],
-                           self.tree.findall('by/citation')[i].find('holdings').text,
-                           self.tree.findall('by/citation')[i].find('numEditions').text,
-                           self.tree.findall('by/citation')[i].find('recordType').text]
+            # first check
+            if response.status_code == 200:
+                try:
+                    self.tree = etree.fromstring(response.content)
+                except:
+                    self.tree = etree.fromstring(response.content, parser = etree.XMLParser(recover = True))
+                # only by uri
+                if self.established_form == None:
+                    self.established_form = ' '.join([subname.text for subname in self.tree.find('nameInfo/rawName').getchildren()])
+                # general
+                self.languages_total = self.tree.find('nameInfo/languages').attrib['count']
+                self.total_holdings = self.tree.find('nameInfo/totalHoldings').text
+                self.work_count = self.tree.find('nameInfo/workCount').text
+                self.record_count = self.tree.find('nameInfo/recordCount').text
+                # specific
+                self.languages = [[self.tree.findall('nameInfo/languages/lang')[i].attrib['code'],self.tree.findall('nameInfo/languages/lang')[i].attrib['count']] for i in range(len(self.tree.findall('nameInfo/languages/lang')))]
+                # works
+                #for i in range(len(self.tree.findall('by/citation'))):
+                for i in range(len([i for i in self.tree.findall('by/citation')])): # to avoid lxml warning
+                    self.works[str(i + 1)] = [
+                        self.tree.findall('by/citation')[i].find('title').text if self.tree.findall('by/citation')[i].find('title').text is not None else 'NA',
+                        self.tree.findall('by/citation')[i].find('languages').attrib['count'] if self.tree.findall('by/citation')[i].find('languages').attrib['count'] is not None else 'NA',
+                        self.tree.findall('by/citation')[i].find('holdings').text if self.tree.findall('by/citation')[i].find('holdings').text is not None else 'NA',
+                        self.tree.findall('by/citation')[i].find('numEditions').text if self.tree.findall('by/citation')[i].find('numEditions').text is not None else 'NA',
+                        self.tree.findall('by/citation')[i].find('recordType').text if self.tree.findall('by/citation')[i].find('recordType').text is not None else 'NA'
+                    ]
+            else:
+                warnings.warn(self.uri + ' does not work', stacklevel=2)
         return self
 
